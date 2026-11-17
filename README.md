@@ -118,6 +118,14 @@ These findings describe patterns in the data. They are not clinical or medical g
 
 `Hospital_analytics_dashboard.html` turns the notebook results into one interactive page.
 
+### Live preview
+
+[![Open the interactive Hospital Analytics Dashboard](https://img.shields.io/badge/Preview-Interactive%20Dashboard-2ea44f?style=for-the-badge)](https://htmlpreview.github.io/?https://raw.githubusercontent.com/Rutvikkihla/Hospital-Data-Analysis/main/Hospital_analytics_dashboard.html)
+
+Click the button above to open the interactive dashboard preview in your browser. GitHub README files do not allow embedded HTML pages or `<iframe>` previews, so this button opens the dashboard separately instead of displaying it inline.
+
+You can also [view the HTML file in the repository](https://github.com/Rutvikkihla/Hospital-Data-Analysis/blob/main/Hospital_analytics_dashboard.html).
+
 ### Sections
 
 | Section | What it shows |
