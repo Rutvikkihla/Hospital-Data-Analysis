@@ -1,137 +1,163 @@
 # Hospital Data Analysis
 
-A clear and practical healthcare analytics project focused on understanding hospital patient data, identifying key patterns, and exploring operational insights using Python, pandas, and data visualization.
+A practical healthcare analytics project that cleans hospital patient data, answers business questions with Python, and presents the results in an interactive HTML dashboard.
 
-This project loads a healthcare dataset, performs data cleaning, derives useful features, and analyzes trends in patient conditions, billing, insurance coverage, emergency admissions, and patient stay duration.
+## Table of Contents
+
+- [Project Overview](#project-overview)
+- [Repository Structure](#repository-structure)
+- [Dataset Description](#dataset-description)
+- [Analysis Steps](#analysis-steps)
+- [Key Findings](#key-findings)
+- [HTML Dashboard](#html-dashboard)
+- [How to Run the Project](#how-to-run-the-project)
+- [Tools Used](#tools-used)
+- [Important Notes](#important-notes)
 
 ## Project Overview
 
-Hospital Data Analysis is designed to help users explore real-world-style hospital data and answer business questions such as:
+This project loads a healthcare dataset, cleans it, adds useful columns, and studies patient conditions, billing, insurance coverage, emergency admissions and length of stay.
+
+It answers questions such as:
 
 - Which medical conditions appear most often?
 - Which insurance providers cover the most patients?
-- How do billing amounts vary over time?
+- How do billing amounts change over time?
 - What is the pattern of emergency admissions by month?
 - Which high-cost or abnormal cases may need review?
 
-The notebook is written in Python and uses the pandas library for data cleaning and analysis. The result is summarized in an interactive HTML dashboard that presents the key findings in a simple, visual way.
+The analysis is written in Python with pandas, and the findings are summarized in a dashboard you can open in any browser.
 
-## Why this project matters
+### Why this project is useful
 
-This repository is useful for:
-
-- learning data cleaning and exploratory data analysis (EDA)
-- understanding healthcare operations data
-- practicing Python-based data analysis workflows
-- building dashboard-style business summaries from raw data
-- exploring patterns in patient records for reporting and decision support
+- Practice data cleaning and exploratory data analysis (EDA)
+- Understand healthcare operations data
+- Build a dashboard-style business summary from raw data
+- Explore patterns in patient records for reporting and decision support
 
 ## Repository Structure
 
-```text
-Hospital-Data-Analysis/
-├── healthcare_dataset.csv        # Raw hospital dataset
-├── main.ipynb                   # Python notebook with analysis and visualizations
-├── Hospital_analytics_dashboard.html  # HTML dashboard preview
-├── README.md                    # Project documentation
-├── LICENSE                      # MIT License
-└── .gitignore                   # Optional repo configuration (if present)
 ```
+Hospital-Data-Analysis/
+├── healthcare_dataset.csv                # Raw hospital dataset
+├── main.ipynb                            # Notebook with analysis and charts
+├── Hospital_analytics_dashboard.html     # Interactive HTML dashboard
+├── README.md                             # Project documentation
+├── LICENSE                               # MIT License
+└── .gitignore                            # Repo configuration (optional)
+```
+
+| File | Purpose |
+|------|---------|
+| `main.ipynb` | Loads the data, checks quality, cleans it, groups and summarizes fields, plots charts and answers the business questions |
+| `healthcare_dataset.csv` | Source data used in the analysis |
+| `Hospital_analytics_dashboard.html` | Dashboard that shows the findings visually and opens directly in a browser |
+| `README.md` | This guide |
 
 ## Dataset Description
 
-The dataset contains hospital-related records with columns such as:
+The original file has **55,500 rows and 15 columns**, with no missing values and **534 duplicate rows**.
 
-- Name
-- Age
-- Gender
-- Blood Type
-- Medical Condition
-- Date of Admission
-- Doctor
-- Hospital
-- Insurance Provider
-- Billing Amount
-- Room Number
-- Admission Type
-- Discharge Date
-- Medication
-- Test Results
+| Group | Columns |
+|-------|---------|
+| Patient | Name, Age, Gender, Blood Type |
+| Medical | Medical Condition, Medication, Test Results |
+| Admission | Date of Admission, Discharge Date, Admission Type, Room Number |
+| Hospital and billing | Doctor, Hospital, Insurance Provider, Billing Amount |
 
-The project performs the following data-quality steps:
+## Analysis Steps
 
-- removes duplicate rows
-- fixes inconsistent text formatting in names
-- replaces negative billing values with the dataset mean
-- converts date columns to datetime format
-- calculates `days_stayed` based on admission and discharge dates
+### Step 1: Load and inspect
+Read the CSV, then check the first rows, data types, shape, summary statistics, missing values and duplicates.
 
-## Key Findings from the Analysis
+### Step 2: Clean the data
+1. **Remove duplicates.** 534 rows dropped, leaving 54,966 records.
+2. **Fix names.** Extra spaces removed and capitalization made consistent (`DaNnY sMitH` becomes `Danny Smith`).
+3. **Fix negative billing amounts.** Values below zero replaced with the column mean.
+4. **Convert dates.** Admission and discharge columns converted to datetime format.
 
-The project identifies several business insights, including:
+### Step 3: Create new columns
+- `days_stayed`: discharge date minus admission date
+- `admission_month`: month of admission, used for the cost trend
 
-- The dataset contains over 55,000 patient records before cleaning.
-- After dropping duplicates and fixing invalid values, about 54,966 rows remain.
-- Medical conditions are spread relatively evenly across the dataset.
-- Insurance coverage is distributed across multiple providers.
-- Average billing remains fairly stable over time.
-- Emergency admissions occur throughout the year, with some monthly variation.
-- A meaningful number of emergency cases have abnormal results and may require review.
-- High-cost records can be identified using billing thresholds.
+The cleaned data has **54,966 rows and 17 columns**.
 
-These findings are descriptive and intended for exploratory analysis, not as clinical or medical guidance.
+### Step 4: Answer the business questions
 
-## Files Included
+| Question | Method | Result |
+|----------|--------|--------|
+| Which medical condition affects the most patients? | Count patients per condition | Arthritis is highest (9,218), Asthma lowest (9,095) |
+| How is patient age distributed? | Average age and histogram | Average age is about 51.5 |
+| How has average treatment cost changed over time? | Average billing per admission month | Overall average is about 25,594.54 across 61 months |
+| Is there a link between age and treatment cost? | Average cost for ages 60 and over, plus scatter plot | Seniors average about 25,563.59, close to the overall average |
+| Which insurance providers cover the most patients? | Count patients per provider | Cigna is highest (11,139), Aetna lowest (10,822) |
 
-### 1. `main.ipynb`
-This is the main analysis notebook.
+### Step 5: Extra business questions
 
-It includes:
+| Question | Result |
+|----------|--------|
+| How many emergency admissions occur each month? | 18,102 in total, with July highest (1,573) and February lowest (1,452) |
+| Who are the high-cost patients? | 5,497 patients have billing above the 90th percentile |
+| Which emergency cases have abnormal test results? | 6,038 cases flagged for review |
 
-- loading the dataset
-- checking null values and duplicates
-- data cleaning
-- grouping and summarizing fields
-- plotting charts and graphs
-- answering key business questions
+Monthly emergency counts add up across all years, so they show the pattern by calendar month.
 
-### 2. `healthcare_dataset.csv`
-This file is the source dataset used in the analysis.
+## Key Findings
 
-### 3. `Hospital_analytics_dashboard.html`
-This file is an HTML preview of the healthcare analytics dashboard. It summarizes the project findings in an easy-to-read visual format and can be opened directly in a browser.
+- The dataset has 55,500 records before cleaning and **54,966** after removing duplicates.
+- Medical conditions are spread evenly, between 9,095 and 9,218 patients each.
+- Insurance coverage is split across five providers, with shares between 19.7% and 20.3%.
+- Average billing stays in a narrow band around 25,594.54 from May 2019 to May 2024.
+- Emergency admissions happen all year, with about 8% between the highest and lowest month.
+- 6,038 emergency cases (about a third of all emergencies) have abnormal results and may need review.
+- High-cost records can be found with a billing threshold: 5,497 patients (10%) sit above the 90th percentile.
 
-### 4. `README.md`
-This documentation explains the project clearly for anyone who wants to understand the workflow and run it locally.
+These findings describe patterns in the data. They are not clinical or medical guidance.
 
-## HTML Dashboard Preview
+## HTML Dashboard
 
-A ready-made preview is already included:
+`Hospital_analytics_dashboard.html` turns the notebook results into one interactive page.
 
-- `Hospital_analytics_dashboard.html`
+### Sections
 
-To view it:
+| Section | What it shows |
+|---------|---------------|
+| Executive Summary | The main findings in a few lines |
+| KPIs | Clean records, average billing, average age, top condition, top insurer, emergency admissions and more |
+| Patients | Patients by condition (bar chart) and insurance provider (donut chart) |
+| Billing | Average billing by admission month (line chart) |
+| Emergency | Emergency admissions by calendar month, plus high-cost and abnormal-case counts |
+| Insights | Each insight with what the data shows, why it matters and an action to consider |
+| Data Explorer | Searchable, sortable tables behind the charts |
+| Conclusion | A short wrap-up |
 
-1. Open the repository folder in your local system.
-2. Double-click the file `Hospital_analytics_dashboard.html`, or
-3. Serve it locally using a simple Python HTTP server:
+### Features
 
-```bash
-python -m http.server 8000
-```
+- Click bars and donut slices to see details
+- Sort the condition chart and pick a date range on the billing chart
+- Search, sort and page through tables, then download them as CSV
+- Save any chart as PNG or view it fullscreen
+- Presentation mode, print layout and a Reset all button
 
-Then open:
+### How to open it
 
-```text
-http://localhost:8000/Hospital_analytics_dashboard.html
-```
+1. Open the repository folder on your computer.
+2. Double-click `Hospital_analytics_dashboard.html`, or serve it locally:
+   ```bash
+   python -m http.server 8000
+   ```
+   Then open `http://localhost:8000/Hospital_analytics_dashboard.html`.
 
-> Note: The dashboard loads Chart.js from a CDN, so internet access is required for full rendering in the browser.
+> **Note:** The dashboard loads Chart.js from a CDN, so internet access is required for the charts to appear.
+
+### Limits
+
+- The dashboard uses summarized results from the notebook, so it has no patient-level filters (such as gender or hospital) and no table of individual records.
+- The age histogram and age-versus-billing scatter plot stay in the notebook only.
 
 ## How to Run the Project
 
 ### Step 1: Clone the repository
-
 ```bash
 git clone https://github.com/Rutvikkihla/Hospital-Data-Analysis.git
 cd Hospital-Data-Analysis
@@ -139,83 +165,45 @@ cd Hospital-Data-Analysis
 
 ### Step 2: Create a virtual environment (recommended)
 
-On Windows:
-
+Windows:
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
 ```
 
-On macOS/Linux:
-
+macOS/Linux:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 ```
 
 ### Step 3: Install dependencies
-
 ```bash
 python -m pip install --upgrade pip
 python -m pip install pandas numpy matplotlib seaborn plotly jupyter
 ```
 
 ### Step 4: Launch Jupyter Notebook
-
 ```bash
 jupyter notebook
 ```
-
-Then open `main.ipynb` and run all cells in order.
-
-## Notebook Workflow
-
-The notebook follows a standard data analysis flow:
-
-1. Load the CSV file
-2. Inspect the dataset structure
-3. Check for null values and duplicate rows
-4. Clean the dataset
-5. Fix inconsistent values and dates
-6. Add derived fields such as `days_stayed`
-7. Analyze patterns and trends
-8. Create charts and summary metrics
-9. Summarize insights in the dashboard
+Open `main.ipynb` and run all cells from top to bottom.
 
 ## Tools Used
 
 - Python
-- Pandas
-- NumPy
-- Matplotlib
-- Seaborn
-- Plotly
+- Pandas and NumPy
+- Matplotlib, Seaborn and Plotly
 - Jupyter Notebook
-- HTML/CSS/JavaScript for the dashboard preview
-
-## Example Questions the Project Answers
-
-- Which department or case type has the highest patient volume?
-- Are there patterns in emergency admissions by month?
-- What is the overall spread of billing amounts?
-- Which insurance providers are most common?
-- Are abnormal test results concentrated in certain groups?
+- HTML, CSS, JavaScript and Chart.js (dashboard)
 
 ## Important Notes
 
 - This project is for educational and exploratory analysis.
-- It is not intended to replace professional medical advice or decision-making.
-- The data is used for analysis and reporting purposes only.
-- Findings are based on dataset patterns and should not be interpreted as clinical conclusions without additional validation.
+- It does not replace professional medical advice or decision-making.
+- Findings are based on dataset patterns and should not be treated as clinical conclusions without further validation.
+- Negative billing values were replaced with the column mean, as in the notebook.
 
-## License
+## Author
 
-This project is licensed under the MIT License.
-
-See the [LICENSE](LICENSE) file for full details.
-
-## Contact / Repository
-
-Repository: https://github.com/Rutvikkihla/Hospital-Data-Analysis
-
-If you want, I can also help you create a more polished landing-page style HTML preview or a GitHub-ready project banner for this repository.
+Rutvik Kihla
