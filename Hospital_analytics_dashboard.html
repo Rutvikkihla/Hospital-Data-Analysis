@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Healthcare Operations Analytics Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#0f1f3d;--mut:#5b6b85;--line:#e2e8f0;--p:#1f4e8c;--p2:#3b82c4;--p3:#7fb2e0;--ac:#e07a1f;--ok:#2a9d6f;--r:10px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#0f1f3d;color:#fff;padding:22px 32px 0}
+header h1{margin:0;font-size:24px}header p{margin:4px 0 14px;color:#b8c6de;max-width:900px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}.meta span{background:#1b3159;border-radius:20px;padding:3px 12px;font-size:12px;color:#d6e2f5}
+nav{display:flex;flex-wrap:wrap;gap:4px;align-items:center;position:sticky;top:0;z-index:5;background:#0f1f3d;padding:0 32px 8px;margin:0 -32px}
+nav a{color:#cfdcf1;text-decoration:none;padding:7px 12px;border-radius:6px;font-size:13px}nav a:hover{background:#1b3159}
+nav .sp{flex:1}
+button,select,input{font:inherit}
+.btn{background:#fff;color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 11px;cursor:pointer}.btn:hover{border-color:var(--p2)}
+nav .btn{background:#1b3159;color:#fff;border-color:#2b4676}
+main{max-width:1280px;margin:0 auto;padding:22px 24px 40px}
+section{margin-bottom:30px;scroll-margin-top:60px}
+h2{font-size:18px;margin:0 0 4px}.sub{color:var(--mut);margin:0 0 14px}
+.grid{display:grid;gap:14px}.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.c2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 1px 3px rgba(15,31,61,.05)}
+.kpi .l{color:var(--mut);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.kpi .v{font-size:28px;font-weight:700;margin:2px 0}.kpi .d{color:var(--mut);font-size:12.5px}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}.ch h3{margin:0;font-size:15px}.ch p{margin:2px 0 0;color:var(--mut);font-size:12.5px}
+.tools{display:flex;gap:6px;flex-wrap:wrap}.tools .btn{padding:3px 8px;font-size:12px}
+.cv{position:relative;height:300px}.card:fullscreen{padding:24px;overflow:auto;background:#fff}.card:fullscreen .cv{height:80vh}
+.ins{border-left:4px solid var(--p)}.ins h3{margin:0 0 8px;font-size:15px}.ins dl{margin:0}.ins dt{font-weight:600;font-size:12px;color:var(--p);text-transform:uppercase;margin-top:8px}.ins dd{margin:0}
+.rec dt{color:var(--ac)}
+.summary li{margin-bottom:6px}
+table{width:100%;border-collapse:collapse}th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left}th{cursor:pointer;background:#f1f5fa;font-size:12.5px;user-select:none;white-space:nowrap}td.n,th.n{text-align:right}
+.tw{overflow-x:auto}.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.bar input,.bar select{border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+.note{background:#fff8ee;border:1px solid #f3d9b0;border-radius:var(--r);padding:12px 14px;color:#6b4a14}
+.range{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}.range select{border:1px solid var(--line);border-radius:6px;padding:4px 6px}
+.stat{display:flex;gap:18px;flex-wrap:wrap;color:var(--mut);font-size:12.5px;margin-top:6px}.stat b{color:var(--ink)}
+footer{color:var(--mut);font-size:12px;text-align:center;padding:10px 0 30px}
+body.present .hide-p,body.present .tools{display:none}body.present main{max-width:1500px}body.present .cv{height:380px}
+@media(max-width:600px){header,nav{padding-left:16px;padding-right:16px}nav{margin:0 -16px}main{padding:16px 12px}.c2{grid-template-columns:1fr}.cv{height:260px}}
+@media print{header nav,.tools,.bar .btn,.no-print{display:none!important}body{background:#fff}.card{break-inside:avoid;box-shadow:none}}
+</style></head><body>
+<header>
+<h1>Healthcare Operations Analytics Dashboard</h1>
+<p>Patient mix, billing, insurance coverage and emergency demand across the hospital network, built from the completed data analysis notebook.</p>
+<div class="meta"><span>Dataset: healthcare_dataset.csv</span><span>Admissions: May 2019 - May 2024</span><span>54,966 clean records, 17 columns</span><span>Source: main.ipynb outputs</span></div>
+<nav id="nav"><a href="#summary">Executive Summary</a><a href="#kpis">KPIs</a><a href="#patients">Patients</a><a href="#cost">Billing</a><a href="#emergency">Emergency</a><a href="#insights">Insights</a><a href="#explorer">Data Explorer</a><a href="#conclusion">Conclusion</a><span class="sp"></span>
+<button class="btn" id="reset">Reset all</button><button class="btn" id="pres">Presentation mode</button><button class="btn" onclick="window.print()">Print</button></nav>
+</header>
+<main>
+<section id="summary"><h2>Executive Summary</h2><p class="sub">The headline findings, verified against notebook outputs.</p>
+<div class="card"><ul class="summary" id="sumList"></ul></div></section>
+
+<section id="kpis"><h2>Key Performance Indicators</h2><p class="sub">All values are taken from notebook outputs or computed from them.</p><div class="grid kpis" id="kpiGrid"></div></section>
+
+<section id="patients"><h2>Patient and Coverage Analysis</h2><p class="sub">Who the network treats and who pays for it. Click a bar or slice to see its detail.</p>
+<div class="grid c2">
+<div class="card" id="cardCond"><div class="ch"><div><h3>Patients by Medical Condition</h3><p>Condition volumes are close to even, so no single condition dominates demand.</p></div><div class="tools"><button class="btn" id="sortCond">Sort: by count</button><button class="btn" data-png="chCond">PNG</button><button class="btn" data-fs="cardCond">Fullscreen</button></div></div><div class="cv"><canvas id="chCond"></canvas></div><div class="stat" id="condInfo">Click a bar for details.</div></div>
+<div class="card" id="cardIns"><div class="ch"><div><h3>Patients by Insurance Provider</h3><p>Coverage is split across five providers with no clear leader.</p></div><div class="tools"><button class="btn" data-png="chIns">PNG</button><button class="btn" data-fs="cardIns">Fullscreen</button></div></div><div class="cv"><canvas id="chIns"></canvas></div><div class="stat" id="insInfo">Click a slice for details.</div></div>
+</div></section>
+
+<section id="cost"><h2>Billing Trend</h2><p class="sub">Average billing amount per admission month. Choose a range to zoom in.</p>
+<div class="card" id="cardTrend"><div class="ch"><div><h3>Average Treatment Cost by Admission Month</h3><p>Monthly averages move in a narrow band around the overall average.</p></div><div class="tools"><button class="btn" data-png="chTrend">PNG</button><button class="btn" data-fs="cardTrend">Fullscreen</button></div></div>
+<div class="range"><label>From <select id="from"></select></label><label>To <select id="to"></select></label></div>
+<div class="cv"><canvas id="chTrend"></canvas></div><div class="stat" id="trendInfo"></div></div></section>
+
+<section id="emergency"><h2>Emergency Demand</h2><p class="sub">Capacity planning view: emergency admissions by calendar month, all years combined.</p>
+<div class="grid c2">
+<div class="card" id="cardEm"><div class="ch"><div><h3>Emergency Admissions by Calendar Month</h3><p>Totals across 2019-2024. May appears in six years, other months in five.</p></div><div class="tools"><button class="btn" data-png="chEm">PNG</button><button class="btn" data-fs="cardEm">Fullscreen</button></div></div><div class="cv"><canvas id="chEm"></canvas></div><div class="stat" id="emInfo"></div></div>
+<div class="card" id="cardFlag"><div class="ch"><div><h3>Patient Groups Flagged for Review</h3><p>High-cost patients and abnormal emergency cases as a share of all records.</p></div><div class="tools"><button class="btn" data-png="chFlag">PNG</button><button class="btn" data-fs="cardFlag">Fullscreen</button></div></div><div class="cv"><canvas id="chFlag"></canvas></div><div class="stat" id="flagInfo"></div></div>
+</div></section>
+
+<section id="insights"><h2>Business Insights</h2><p class="sub">Each insight separates what the data shows from what the business could consider.</p><div class="grid c2" id="insGrid"></div></section>
+
+<section id="explorer" class="hide-p"><h2>Data Explorer</h2><p class="sub">Search, sort and export the verified result tables behind every chart.</p>
+<div class="note" style="margin-bottom:12px">The notebook outputs contain aggregated results, not the raw patient rows, so patient-level filtering and a record table are not included. Upload healthcare_dataset.csv to add them.</div>
+<div class="card"><div class="bar"><select id="tbl"></select><input id="q" placeholder="Search..."><select id="ps"><option>10</option><option>20</option><option>61</option></select><span id="cnt" style="color:var(--mut)"></span><span style="flex:1"></span><button class="btn" id="csv">Download CSV</button><button class="btn" id="tg">Hide table</button></div>
+<div id="tbox"><div class="tw"><table><thead id="th"></thead><tbody id="tb"></tbody></table></div>
+<div class="bar" style="margin:10px 0 0"><button class="btn" id="pv">Prev</button><span id="pg"></span><button class="btn" id="nx">Next</button></div></div></div></section>
+
+<section id="conclusion"><h2>Final Conclusion</h2><div class="card" id="concl"></div></section>
+<footer>Data source: main.ipynb (healthcare_dataset.csv, 55,500 raw rows, 534 duplicates removed). Charts use Chart.js loaded from a CDN, so internet access is required.</footer>
+</main>
+<script>
+const D={"months":["2019-05","2019-06","2019-07","2019-08","2019-09","2019-10","2019-11","2019-12","2020-01","2020-02","2020-03","2020-04","2020-05","2020-06","2020-07","2020-08","2020-09","2020-10","2020-11","2020-12","2021-01","2021-02","2021-03","2021-04","2021-05","2021-06","2021-07","2021-08","2021-09","2021-10","2021-11","2021-12","2022-01","2022-02","2022-03","2022-04","2022-05","2022-06","2022-07","2022-08","2022-09","2022-10","2022-11","2022-12","2023-01","2023-02","2023-03","2023-04","2023-05","2023-06","2023-07","2023-08","2023-09","2023-10","2023-11","2023-12","2024-01","2024-02","2024-03","2024-04","2024-05"],"avg":[25897.45,26324.0,25928.6,25457.1,24915.55,25994.97,25900.91,25686.49,25860.86,25341.36,25537.67,25225.5,25600.51,26055.86,24812.79,25527.99,24882.94,25048.27,25348.93,26221.16,25546.87,25632.09,26075.71,25775.17,25038.89,26103.64,25741.47,25541.78,25193.61,26802.36,25669.29,24996.09,25562.88,24827.99,25852.67,25703.77,25596.15,25283.32,25880.51,25115.55,25715.59,25801.71,26354.44,25252.4,26044.59,25507.01,24476.26,25612.5,24765.01,26098.25,25158.33,25616.28,25701.29,26756.77,25562.89,26101.03,25836.7,25703.59,25310.58,24930.03,25464.9]};
+const COND=[["Arthritis",9218],["Diabetes",9216],["Hypertension",9151],["Obesity",9146],["Cancer",9140],["Asthma",9095]];
+const INS=[["Cigna",11139],["Medicare",11039],["UnitedHealthcare",11014],["Blue Cross",10952],["Aetna",10822]];
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const EM=[1547,1452,1528,1473,1533,1483,1573,1533,1500,1490,1462,1528];
+const RAW=55500,DUP=534,CLEAN=54966,AVGC=25594.54,AGE=51.54,SENIOR=25563.59,HIGH=5497,FLAG=6038;
+const EMT=EM.reduce((a,b)=>a+b,0),sum=a=>a.reduce((x,y)=>x+y,0);
+console.assert(sum(COND.map(x=>x[1]))===CLEAN&&sum(INS.map(x=>x[1]))===CLEAN&&RAW-DUP===CLEAN,"total check");
+const f0=n=>n.toLocaleString("en-US",{maximumFractionDigits:0}),f2=n=>n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}),pc=(a,b)=>(a/b*100).toFixed(1)+"%";
+const PAL=["#1f4e8c","#3b82c4","#7fb2e0","#e07a1f","#2a9d6f","#8a63b8"];
+Chart.defaults.font.family='"Segoe UI",system-ui,sans-serif';Chart.defaults.color="#5b6b85";
+const pad=[...D.avg],mean=a=>sum(a)/a.length;
+const maxC=COND.reduce((a,b)=>b[1]>a[1]?b:a),minC=COND.reduce((a,b)=>b[1]<a[1]?b:a),maxI=INS[0],maxEi=EM.indexOf(Math.max(...EM)),minEi=EM.indexOf(Math.min(...EM));
+// Summary + KPIs
+document.getElementById("sumList").innerHTML=[
+`The network holds <b>${f0(CLEAN)}</b> clean patient records after removing ${f0(DUP)} duplicates from ${f0(RAW)} raw rows.`,
+`Demand is evenly spread: all six conditions fall between ${f0(minC[1])} and ${f0(maxC[1])} patients, led by ${maxC[0]} (${pc(maxC[1],CLEAN)}).`,
+`Average billing per admission is <b>${f2(AVGC)}</b>. Patients aged 60 and over average ${f2(SENIOR)}, almost identical to the overall figure.`,
+`<b>${f0(EMT)}</b> admissions (${pc(EMT,CLEAN)}) were emergencies, and ${f0(FLAG)} emergency cases had abnormal test results.`,
+`${f0(HIGH)} patients (${pc(HIGH,CLEAN)}) sit above the 90th percentile of billing amount.`].map(t=>"<li>"+t+"</li>").join("");
+const K=[["Clean Patient Records",f0(CLEAN),`After removing ${f0(DUP)} duplicates from ${f0(RAW)} raw rows`],
+["Average Billing Amount",f2(AVGC),"Mean billing per admission after fixing negative amounts"],
+["Average Patient Age",AGE.toFixed(1),"Mean age across the network"],
+["Top Condition",maxC[0],`${f0(maxC[1])} patients, ${pc(maxC[1],CLEAN)} of records`],
+["Top Insurance Provider",maxI[0],`${f0(maxI[1])} patients, ${pc(maxI[1],CLEAN)} of records`],
+["Emergency Admissions",f0(EMT),`${pc(EMT,CLEAN)} of all admissions`],
+["Abnormal Emergency Cases",f0(FLAG),`${pc(FLAG,EMT)} of emergency admissions, flagged for review`],
+["High-Cost Patients",f0(HIGH),"Billing above the 90th percentile"]];
+document.getElementById("kpiGrid").innerHTML=K.map(k=>`<div class="card kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="d">${k[2]}</div></div>`).join("");
+// Charts
+const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}};
+let sortMode="count",selC=-1;
+const chCond=new Chart("chCond",{type:"bar",data:{labels:[],datasets:[{data:[],backgroundColor:[]}]},options:{...base,scales:{y:{beginAtZero:true,title:{display:true,text:"Number of patients"},ticks:{callback:v=>f0(v)}},x:{title:{display:true,text:"Medical condition"}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f0(c.parsed.y)+" patients ("+pc(c.parsed.y,CLEAN)+")"}}},onClick:(e,el)=>{if(el.length){selC=selC===el[0].index?-1:el[0].index;drawCond()}}}});
+function drawCond(){const d=[...COND];if(sortMode==="name")d.sort((a,b)=>a[0].localeCompare(b[0]));else d.sort((a,b)=>b[1]-a[1]);
+chCond.data.labels=d.map(x=>x[0]);chCond.data.datasets[0].data=d.map(x=>x[1]);chCond.data.datasets[0].backgroundColor=d.map((x,i)=>selC<0||selC===i?"#1f4e8c":"#c5d5ea");chCond.update();
+document.getElementById("condInfo").innerHTML=selC<0?"Click a bar for details.":`<span><b>${d[selC][0]}</b></span><span>${f0(d[selC][1])} patients</span><span>${pc(d[selC][1],CLEAN)} of records</span>`;
+document.getElementById("sortCond").textContent="Sort: by "+(sortMode==="count"?"count":"name")}
+document.getElementById("sortCond").onclick=()=>{sortMode=sortMode==="count"?"name":"count";selC=-1;drawCond()};
+const chIns=new Chart("chIns",{type:"doughnut",data:{labels:INS.map(x=>x[0]),datasets:[{data:INS.map(x=>x[1]),backgroundColor:PAL,borderColor:"#fff",borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,cutout:"58%",plugins:{legend:{position:"right"},tooltip:{callbacks:{label:c=>c.label+": "+f0(c.parsed)+" ("+pc(c.parsed,CLEAN)+")"}}},onClick:(e,el)=>{if(el.length){const i=el[0].index;document.getElementById("insInfo").innerHTML=`<span><b>${INS[i][0]}</b></span><span>${f0(INS[i][1])} patients</span><span>${pc(INS[i][1],CLEAN)} of records</span>`}}}});
+const from=document.getElementById("from"),to=document.getElementById("to");
+D.months.forEach((m,i)=>{from.add(new Option(m,i));to.add(new Option(m,i))});from.value=0;to.value=D.months.length-1;
+const chTrend=new Chart("chTrend",{type:"line",data:{labels:[],datasets:[{label:"Average billing",data:[],borderColor:"#1f4e8c",backgroundColor:"rgba(31,78,140,.1)",fill:true,tension:.25,pointRadius:2},{label:"Overall average ("+f2(AVGC)+")",data:[],borderColor:"#e07a1f",borderDash:[6,4],pointRadius:0}]},options:{...base,plugins:{legend:{display:true,position:"bottom"},tooltip:{callbacks:{label:c=>c.dataset.label.split(" (")[0]+": "+f2(c.parsed.y)}}},scales:{y:{title:{display:true,text:"Average billing amount"},ticks:{callback:v=>f0(v)}},x:{title:{display:true,text:"Admission month"},ticks:{maxTicksLimit:12}}}}});
+function drawTrend(){let a=+from.value,b=+to.value;if(a>b){[a,b]=[b,a];from.value=a;to.value=b}
+const l=D.months.slice(a,b+1),v=D.avg.slice(a,b+1);chTrend.data.labels=l;chTrend.data.datasets[0].data=v;chTrend.data.datasets[1].data=l.map(()=>AVGC);chTrend.update();
+const hi=v.indexOf(Math.max(...v)),lo=v.indexOf(Math.min(...v));
+document.getElementById("trendInfo").innerHTML=`<span>${l.length} months</span><span>Mean of monthly averages: <b>${f2(mean(v))}</b></span><span>Highest: <b>${f2(v[hi])}</b> (${l[hi]})</span><span>Lowest: <b>${f2(v[lo])}</b> (${l[lo]})</span>`}
+from.onchange=to.onchange=drawTrend;
+const chEm=new Chart("chEm",{type:"bar",data:{labels:MN,datasets:[{data:EM,backgroundColor:EM.map((v,i)=>i===maxEi?"#e07a1f":"#3b82c4")}]},options:{...base,scales:{y:{beginAtZero:true,title:{display:true,text:"Emergency admissions"},ticks:{callback:v=>f0(v)}},x:{title:{display:true,text:"Calendar month"}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f0(c.parsed.y)+" emergency admissions"}}}}});
+document.getElementById("emInfo").innerHTML=`<span>Total: <b>${f0(EMT)}</b></span><span>Peak: <b>${MN[maxEi]}</b> (${f0(EM[maxEi])})</span><span>Lowest: <b>${MN[minEi]}</b> (${f0(EM[minEi])})</span>`;
+const fl=[["High-cost patients (above P90)",HIGH],["Emergency with abnormal results",FLAG]];
+new Chart("chFlag",{type:"bar",data:{labels:fl.map(x=>x[0]),datasets:[{data:fl.map(x=>x[1]),backgroundColor:["#e07a1f","#1f4e8c"]}]},options:{...base,indexAxis:"y",scales:{x:{beginAtZero:true,title:{display:true,text:"Number of patients"},ticks:{callback:v=>f0(v)}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>f0(c.parsed.x)+" patients ("+pc(c.parsed.x,CLEAN)+" of records)"}}}}});
+document.getElementById("flagInfo").innerHTML=`<span>High-cost: <b>${pc(HIGH,CLEAN)}</b> of records</span><span>Abnormal emergency: <b>${pc(FLAG,CLEAN)}</b> of records, <b>${pc(FLAG,EMT)}</b> of emergencies</span>`;
+drawCond();drawTrend();
+// Insights
+const I=[
+["Patient demand is balanced across conditions",`${maxC[0]} leads with ${f0(maxC[1])} patients and ${minC[0]} is lowest with ${f0(minC[1])}, a gap of ${f0(maxC[1]-minC[1])} patients.`,"Planning can not rely on one dominant condition; all six need similar capacity.","Allocate specialist capacity evenly and review it as volumes shift."],
+["Coverage is spread across five insurers",`${maxI[0]} covers ${pc(maxI[1],CLEAN)} and ${INS[4][0]} ${pc(INS[4][1],CLEAN)}, so shares differ by only ${(INS[0][1]/CLEAN*100-INS[4][1]/CLEAN*100).toFixed(1)} percentage points.`,"No single payer holds enough volume to dominate contract negotiations.","Keep relationships with all five providers and track reimbursement terms."],
+["Average billing is stable over time",`Monthly averages range from ${f2(Math.min(...D.avg))} to ${f2(Math.max(...D.avg))} around an overall average of ${f2(AVGC)}.`,"Billing stays within a narrow band, with no large swings month to month.","Monitor monthly averages and investigate months that leave this band."],
+["Age shows no cost difference in the averages",`Patients aged 60 and over average ${f2(SENIOR)} against ${f2(AVGC)} overall.`,"The 60 and over average is close to the overall average, so age shows little link to average billing here.","Review condition, admission type and length of stay for other cost drivers."],
+["Emergency admissions are steady through the year",`${MN[maxEi]} is highest (${f0(EM[maxEi])}) and ${MN[minEi]} lowest (${f0(EM[minEi])}) of ${f0(EMT)} emergency admissions.`,"The highest month is ${((EM[maxEi]/EM[minEi]-1)*100).toFixed(1)}% above the lowest, so monthly demand is fairly flat.","Plan emergency staffing on a flat baseline with a small buffer for peak months."],
+["A large group of emergency cases needs review",`${f0(FLAG)} emergency admissions had abnormal results, ${pc(FLAG,EMT)} of all emergencies.`,"These are the cases where clinical follow-up matters most.","Set up a routine review queue for abnormal emergency results."]];
+document.getElementById("insGrid").innerHTML=I.map(x=>`<div class="card ins"><h3>${x[0]}</h3><dl><dt>What the data shows</dt><dd>${x[1]}</dd><dt>Why it matters</dt><dd>${x[2]}</dd></dl><dl class="rec"><dt>Action to consider</dt><dd>${x[3]}</dd></dl></div>`).join("");
+document.getElementById("concl").innerHTML=`<p>After cleaning, ${f0(CLEAN)} patient records show a balanced network: even condition volumes, evenly split insurance coverage and billing that holds near ${f2(AVGC)} across five years. The areas that deserve attention are the ${f0(HIGH)} high-cost patients and the ${f0(FLAG)} abnormal emergency cases.</p><p style="color:var(--mut)">These results describe patterns in the data and do not establish causes. Billing amounts below zero in the raw data were replaced with the column mean, as in the notebook.</p>`;
+// Explorer
+const T={"Conditions":{h:["Medical Condition","Patients","Share"],r:COND.map(x=>[x[0],x[1],pc(x[1],CLEAN)])},
+"Insurance Providers":{h:["Insurance Provider","Patients","Share"],r:INS.map(x=>[x[0],x[1],pc(x[1],CLEAN)])},
+"Emergency by Month":{h:["Calendar Month","Emergency Admissions"],r:EM.map((v,i)=>[MN[i],v])},
+"Monthly Average Billing":{h:["Admission Month","Average Billing Amount"],r:D.months.map((m,i)=>[m,D.avg[i]])}};
+const tbl=document.getElementById("tbl");Object.keys(T).forEach(k=>tbl.add(new Option(k)));
+let sc=-1,sd=1,pgn=0,view=[];
+const q=document.getElementById("q"),ps=document.getElementById("ps");
+const cell=v=>typeof v==="number"?(v%1?f2(v):f0(v)):v;
+function drawT(){const t=T[tbl.value];let r=t.r.filter(x=>x.join(" ").toLowerCase().includes(q.value.toLowerCase()));
+if(sc>=0)r.sort((a,b)=>(typeof a[sc]==="number"?a[sc]-b[sc]:String(a[sc]).localeCompare(String(b[sc])))*sd);view=r;
+const n=+ps.value,pages=Math.max(1,Math.ceil(r.length/n));pgn=Math.min(pgn,pages-1);
+document.getElementById("th").innerHTML="<tr>"+t.h.map((h,i)=>`<th class="${i?"n":""}" data-c="${i}">${h}${sc===i?(sd>0?" ▲":" ▼"):""}</th>`).join("")+"</tr>";
+document.getElementById("tb").innerHTML=r.slice(pgn*n,pgn*n+n).map(x=>"<tr>"+x.map((v,i)=>`<td class="${i?"n":""}">${cell(v)}</td>`).join("")+"</tr>").join("");
+document.getElementById("cnt").textContent=r.length+" of "+t.r.length+" records";document.getElementById("pg").textContent="Page "+(pgn+1)+" of "+pages;
+document.querySelectorAll("#th th").forEach(h=>h.onclick=()=>{const c=+h.dataset.c;sd=sc===c?-sd:1;sc=c;drawT()})}
+tbl.onchange=()=>{sc=-1;pgn=0;q.value="";drawT()};q.oninput=()=>{pgn=0;drawT()};ps.onchange=()=>{pgn=0;drawT()};
+document.getElementById("pv").onclick=()=>{pgn=Math.max(0,pgn-1);drawT()};document.getElementById("nx").onclick=()=>{pgn++;drawT()};
+document.getElementById("tg").onclick=function(){const b=document.getElementById("tbox");b.hidden=!b.hidden;this.textContent=b.hidden?"Show table":"Hide table"};
+document.getElementById("csv").onclick=()=>{const t=T[tbl.value];const esc=v=>'"'+String(v).replace(/"/g,'""')+'"';
+const s=[t.h.map(esc).join(",")].concat(view.map(r=>r.map(esc).join(","))).join("\n");
+const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([s],{type:"text/csv"}));a.download=tbl.value.replace(/\s+/g,"_").toLowerCase()+".csv";a.click();URL.revokeObjectURL(a.href)};
+drawT();
+// Global controls
+document.querySelectorAll("[data-fs]").forEach(b=>b.onclick=()=>{const e=document.getElementById(b.dataset.fs);document.fullscreenElement?document.exitFullscreen():e.requestFullscreen&&e.requestFullscreen()});
+document.addEventListener("fullscreenchange",()=>Chart.instances&&Object.values(Chart.instances).forEach(c=>c.resize()));
+document.querySelectorAll("[data-png]").forEach(b=>b.onclick=()=>{const c=document.getElementById(b.dataset.png),o=document.createElement("canvas");o.width=c.width;o.height=c.height;const x=o.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,o.width,o.height);x.drawImage(c,0,0);const a=document.createElement("a");a.href=o.toDataURL("image/png");a.download=b.dataset.png+".png";a.click()});
+document.getElementById("reset").onclick=()=>{from.value=0;to.value=D.months.length-1;sortMode="count";selC=-1;q.value="";sc=-1;pgn=0;tbl.selectedIndex=0;ps.value="10";drawCond();drawTrend();drawT();document.getElementById("insInfo").textContent="Click a slice for details."};
+document.getElementById("pres").onclick=function(){document.body.classList.toggle("present");this.textContent=document.body.classList.contains("present")?"Exit presentation":"Presentation mode";setTimeout(()=>Object.values(Chart.instances).forEach(c=>c.resize()),50)};
+</script></body></html>
